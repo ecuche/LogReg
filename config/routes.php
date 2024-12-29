@@ -8,6 +8,9 @@ $router->add('/forgot-password', ["controller" => "homes", "method" => "forgot-p
 $router->add('/register-new-user', ["controller" => "homes", "method" => "register-new-user"]);
 $router->add('/log-in-user', ["controller" => "homes", "method" => "log-in-user"]);
 $router->add('/recover-account', ["controller" => "homes", "method" => "recover-account"]);
+$router->add("/reset/password/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}/{hash:[a-zA-Z0-9]{64}}", ["controller" => "homes", "method" => "reset-password"]);
+$router->add("/password/reset/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}/{hash:[a-zA-Z0-9]{64}}", ["controller" => "homes", "method" => "password-reset"]);
+$router->add("/activate/account/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}/{hash:[a-zA-Z0-9]{64}}", ["controller" => "homes", "method" => "activate-account"]);
 $router->add('/logout', ["controller" => "homes", "method" => "log-out-user"]);
 $router->add('/contact-us', ["controller" => "homes", "method" => "contact-us"]);
 $router->add('/contact', ["controller" => "homes", "method" => "contact"]);

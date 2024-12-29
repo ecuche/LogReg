@@ -1,8 +1,8 @@
 $(document).ready(function () {
 
 
-    $('#hide-show-password').css('cursor', 'pointer');
-    $('#hide-show-password').click(function (e) { 
+    $('.hide-show-password').css('cursor', 'pointer');
+    $('.hide-show-password').click(function (e) { 
         e.preventDefault();
         if($(this).hasClass('bi-eye-slash-fill')){
             $(this).removeClass('bi-eye-slash-fill');

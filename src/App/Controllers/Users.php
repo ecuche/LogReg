@@ -6,6 +6,7 @@ use Framework\Controller;
 use Framework\Response;
 use Framework\Helpers\Auth;
 use Framework\Helpers\Session;
+use Framework\Helpers\Token;
 
 class Users extends Controller
 {
@@ -45,6 +46,7 @@ class Users extends Controller
     }
     public function edit(string $id): Response
     {
+        $id = (int)$id;
         $user = $this->usersModel->findById($id);
        
         return $this->view('users/edit.mvc', [
@@ -54,6 +56,7 @@ class Users extends Controller
 
     public function update(string $id): Response
     {
+        $id = (int)$id;
         $user = $this->usersModel->findById($id);
         $user->name = $this->request->post['name'];
         $update = $this->request->post;
@@ -73,6 +76,7 @@ class Users extends Controller
     
     public function destroy(string $id): Response
     {
+        $id = (int)$id;
         $this->usersModel->findById( $id);
         $this->usersModel->deleteRow($id);
         header("Location: {$_ENV['URL_ROOT']}/users/index");
@@ -81,6 +85,7 @@ class Users extends Controller
 
     public function delete(string $id): Response
     {
+        $id = (int)$id;
         $user = $this->usersModel->findById($id);
         return $this->view('users/delete.mvc', [
             "user" => $user

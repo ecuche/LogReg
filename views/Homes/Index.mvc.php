@@ -17,6 +17,11 @@
                                     {{$success}}
                                 </div>
                                 {% endif; %}
+                                {% if(!empty($warn)): %}
+                                <div class="alert alert-warning" role="alert">
+                                    {{$warn}}
+                                </div>
+                                {% endif; %}
                                 {% if(!empty($auth)): %}
                                 <div class="alert alert-warning" role="alert">
                                     {{$auth}}
@@ -34,8 +39,8 @@
                                 </div>
                                 <div class="mb-3">
                                     <div class="input-group">
-                                        <input class="form-control {% echo !empty($errors->password) || !empty($errors->login) ? 'is-invalid' : ''; %}" type="password" name="password" id="password" placeholder="Password" required>
-                                        <i class="input-group-text bi-eye-slash-fill" id="hide-show-password"></i>
+                                        <input class="form-control {% echo !empty($errors->password) || !empty($errors->login) ? 'is-invalid' : ''; %}" type="password" name="password" id="password" placeholder="Password" data-bs-theme="dark" minlength="6" aria-describedby="passwordHelpBlock" required>
+                                        <i class="input-group-text bi-eye-slash-fill hide-show-password"></i>
                                     </div>
                                 </div>
                                 <div class="mb-3 form-check form-switch form-check-reverse">

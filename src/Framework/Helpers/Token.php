@@ -7,10 +7,7 @@ class Token
 
     public function __construct(string $token_value = null)
     {
-        if($token_value){
-            $this->token = $token_value;
-        }
-        $this->token = bin2hex(random_bytes(16));
+            $this->token = $token_value ?? bin2hex(random_bytes(16));
     }
 
     public function getValue() : string

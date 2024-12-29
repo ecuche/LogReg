@@ -111,10 +111,18 @@ class Mail
         return $this->subject = ucwords($subject);
     }
 
-    public function message(string $message, bool|string $html = false): string
+    public function message(string $message, bool|string $html = true): string
     {   
-        $this->message .= "--{$this->boundary}\r\n";  
+        $this->message .= "--{$this->boundary}\r\n";
+        $this->message .= "Content-Type: multipart/alternative; boundary=alt-{$this->boundary}\r\n\r\n";
+
+        $this->message .= "--alt-{$this->boundary}\r\n";
+        $this->message .= "Content-Type: text/plain; charset=iso-8859-1\r\n"; 
+        $this->message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+        $this->message .= "{$message} \r\n\r\n";    
+
         if ($html === true || is_string($html)) {
+            $this->message .= "--alt-{$this->boundary}\r\n";
             $this->message .= "Content-Type: text/html; charset=iso-8859-1\r\n"; 
             $this->message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
             if($html === true){
@@ -122,11 +130,8 @@ class Mail
             }elseif(is_string($html)){
                 $this->message .= $html;
             }
-        }else{          
-            $this->message .= "Content-Type: text/plain; charset=iso-8859-1\r\n"; 
-            $this->message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-            $this->message .= $message;
         }
+        $this->message .= "\r\n\r\n--alt-{$this->boundary}--\r\n\r\n";
         return  $this->message;
     }
 

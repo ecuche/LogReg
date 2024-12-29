@@ -39,18 +39,20 @@ abstract class Model
 
     }
 
-    public function findAll(): array|object
+    public function findAll(string $table = null): array|object
     {
+        $table ??= $this->getTable();
         $conn = $this->database->getConnection();
-        $sql = "SELECT * FROM {$this->getTable()} WHERE deleted_on IS NULL";
+        $sql = "SELECT * FROM {$table} WHERE deleted_on IS NULL";
         $stmt = $conn->query($sql);
         return  $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
-    public function first(): array|object
+    public function first(string $table = null): array|object
     {
+        $table ??= $this->getTable();
         $conn = $this->database->getConnection();
-        $sql = "SELECT * FROM {$this->getTable()} WHERE deleted_on IS NULL";
+        $sql = "SELECT * FROM {$table} WHERE deleted_on IS NULL";
         $stmt = $conn->query($sql);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
         $result = array_shift($result);
@@ -58,10 +60,11 @@ abstract class Model
         return  $result;
     }
 
-    public function last(): array|object
+    public function last(string $table = null): array|object
     {
+        $table ??= $this->getTable();
         $conn = $this->database->getConnection();
-        $sql = "SELECT * FROM {$this->getTable()} WHERE deleted_on IS NULL";
+        $sql = "SELECT * FROM {$table} WHERE deleted_on IS NULL";
         $stmt = $conn->query($sql);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
         $result = array_pop($result);
@@ -69,19 +72,32 @@ abstract class Model
         return  $result;
     }
 
-    public function findById(string|int $id): object|bool
+    public function findById(int $id, string $table = null): object|bool
     {
+        $table ??= $this->getTable();
         $conn = $this->database->getConnection();
-        $sql = "SELECT * FROM {$this->getTable()} WHERE id = :id AND deleted_on IS NULL";
+        $sql = "SELECT * FROM {$table} WHERE id = :id AND deleted_on IS NULL";
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    public function findByField(string $field, $value): object|bool
+    public function pullById(int $id, string $table = null): object|bool
     {
-        $sql = "SELECT * FROM {$this->getTable()} WHERE {$field} = :field AND deleted_on IS NULL LIMIT 1";
+        $table ??= $this->getTable();
+        $conn = $this->database->getConnection();
+        $sql = "SELECT * FROM {$table} WHERE id = :id ";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function findByField(string $field, mixed $value, string $table = null): object|bool
+    {
+        $table ??= $this->getTable();
+        $sql = "SELECT * FROM {$table} WHERE {$field} = :field AND deleted_on IS NULL LIMIT 1";
         $type = match(gettype($value)){
             "boolean" => PDO::PARAM_BOOL,
             "integer" => PDO::PARAM_INT,
@@ -95,7 +111,24 @@ abstract class Model
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    public function insert(array|object $data): bool
+    public function pullByField(string $field, mixed $value, string $table = null): object|bool
+    {
+        $table ??= $this->getTable();
+        $sql = "SELECT * FROM {$table} WHERE {$field} = :field ";
+        $type = match(gettype($value)){
+            "boolean" => PDO::PARAM_BOOL,
+            "integer" => PDO::PARAM_INT,
+            "NULL" => PDO::PARAM_NULL,
+            default => PDO::PARAM_STR
+        };
+        $conn = $this->database->getConnection();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(":field", $value, $type);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function insert(array|object $data, string $table = null): bool
     {
         if(!empty($this->errors)){
             return false;
@@ -104,7 +137,8 @@ abstract class Model
         $conn = $this->database->getConnection();
         $fields = implode(",", array_keys($data));
         $placeholders = implode(",", array_fill(0, count($data), "?"));
-        $sql = "INSERT INTO {$this->getTable()} ($fields) VALUES ($placeholders)";
+        $table ??= $this->getTable();
+        $sql = "INSERT INTO {$table} ($fields) VALUES ($placeholders)";
         $stmt = $conn->prepare($sql);
         $i = 1;
         foreach($data as $value){
@@ -119,19 +153,50 @@ abstract class Model
 
         return $stmt->execute();
     }
-    public function updateRow(string $id, array|object $data): bool
+    public function updateRow(int $id, array|object $data, string $table = null): bool
     {
         if(!empty($this->errors)){
             return false;
         }
-        $sql = "UPDATE {$this->getTable()} SET ";
+        $table ??= $this->getTable();
+        $sql = "UPDATE {$table} SET ";
         $data = (array) $data;
         unset($data['id']);
         $assignments = array_keys($data);
         array_walk($assignments, function(&$value){
             $value = " $value = ?";
         });
-        $sql .= implode(',', $assignments)." WHERE id = ?";
+        $sql .= implode(',', $assignments)." WHERE id = ? ";
+        $conn = $this->database->getConnection();
+        $sql .= " AND deleted_on IS NULL";
+        $stmt = $conn->prepare($sql);
+        $i = 1;
+        foreach($data as $value){
+            $type = match(gettype($value)){
+                "boolean" => PDO::PARAM_BOOL,
+                "integer" => PDO::PARAM_INT,
+                "NULL" => PDO::PARAM_NULL,
+                default => PDO::PARAM_STR
+            };
+            $stmt->bindValue($i++, $value, $type);
+        }
+        $stmt->bindValue($i, $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+    public function editRow(int $id, array|object $data, string $table = null): bool
+    {
+        if(!empty($this->errors)){
+            return false;
+        }
+        $table ??= $this->getTable();
+        $sql = "UPDATE {$table} SET ";
+        $data = (array) $data;
+        unset($data['id']);
+        $assignments = array_keys($data);
+        array_walk($assignments, function(&$value){
+            $value = " $value = ?";
+        });
+        $sql .= implode(',', $assignments)." WHERE id = ? ";
         $conn = $this->database->getConnection();
         $stmt = $conn->prepare($sql);
         $i = 1;
@@ -145,42 +210,84 @@ abstract class Model
             $stmt->bindValue($i++, $value, $type);
         }
         $stmt->bindValue($i, $id, PDO::PARAM_INT);
-
-
         return $stmt->execute();
     }
 
-    public function deleteRow(string $id): bool
+    public function deleteRow(int $id, string $table = null): bool
     {
-        $sql = "UPDATE {$this->getTable()} SET deleted_on = NOW() WHERE id = :id";
+        $table ??= $this->getTable();
+        $sql = "UPDATE {$table} SET deleted_on = NOW() WHERE id = :id";
         $conn = $this->database->getConnection();
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         return $stmt ->execute();
     }
 
-    public function recoverRow(string $id): bool
+    public function deleteByfield(string $field, mixed $value, string $table = null): bool
     {
-        $sql = "UPDATE {$this->getTable()} SET deleted_on = NULL WHERE id = :id";
+        $table ??= $this->getTable();
+        $sql = "UPDATE {$table} SET deleted_on = NOW() WHERE {$field} = :field_value";
+        $conn = $this->database->getConnection();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(":field_value", $value, PDO::PARAM_INT);
+        return $stmt ->execute();
+    }
+
+    public function killRow(int $id, string $table = null): bool
+    {
+        $table ??= $this->getTable();
+        $sql = "DELETE FROM  {$table} WHERE id = :id";
         $conn = $this->database->getConnection();
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         return $stmt ->execute();
     }
 
-    public function rowCount(): int
+    public function killByfield(string $field, mixed $value, string $table = null): bool
     {
-        $sql = "SELECT COUNT(*) AS total FROM {$this->getTable()} WHERE deleted_on IS NULL";
+        $table ??= $this->getTable();
+        $sql = "DELETE FROM  {$table} WHERE {$field} = :field_value";
+        $conn = $this->database->getConnection();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(":field_value", $value, PDO::PARAM_INT);
+        return $stmt ->execute();
+    }
+
+    public function recoverRow(int $id, string $table = null): bool
+    {
+        $table ??= $this->getTable();
+        $sql = "UPDATE {$table} SET deleted_on = NULL WHERE id = :id";
+        $conn = $this->database->getConnection();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        return $stmt ->execute();
+    }
+
+    public function rowCount(string $table = null): int
+    {
+        $table ??= $this->getTable();
+        $sql = "SELECT COUNT(*) AS total FROM {$table} WHERE deleted_on IS NULL";
         $conn = $this->database->getConnection();
         $stmt = $conn->query($sql);
         $row = $stmt->fetch(PDO::FETCH_OBJ);
         return (int) $row->total;	
     }
 
-    public function fieldValueExists(string $field, string|int $value): bool
+    public function rowTotal(string $table = null): int
     {
+        $table ??= $this->getTable();
+        $sql = "SELECT COUNT(*) AS total FROM {$table} ";
         $conn = $this->database->getConnection();
-        $sql = "SELECT * FROM {$this->getTable()} WHERE {$field} = :val";
+        $stmt = $conn->query($sql);
+        $row = $stmt->fetch(PDO::FETCH_OBJ);
+        return (int) $row->total;	
+    }
+
+    public function fieldValueExists(string $field, string|int $value, string $table = null): bool
+    {
+        $table ??= $this->getTable();
+        $conn = $this->database->getConnection();
+        $sql = "SELECT * FROM {$table} WHERE {$field} = :val";
         $stmt = $conn->prepare($sql);
         $type = match(gettype($value)){
             "integer" => PDO::PARAM_INT,

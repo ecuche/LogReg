@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Framework\Model;
 use Framework\Helpers\Session;
+use Framework\Helpers\Token;
+use Framework\Helpers\Mail;
+use PDO;
 
 class User extends Model
 {
@@ -47,6 +50,22 @@ class User extends Model
         }
     }
 
+    public function validatePasswordReset(array|object $data): void
+    {
+        $data = (object)$data;
+        if(empty($data->password)){
+            $this->addError('password', "kindly provide Password");
+        }
+
+        if(empty($this->errors) && (preg_match("#^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9A-Za-z]{6,}$#" , $data->password)) === 0){
+            $this->addError("password", "Kindly provide a valid Password");
+        }
+
+        if(empty($this->errors) && ($data->password !== $data->password_again)){
+            $this->addError("password", "Password does not Match");
+        }
+    }
+
     public function validateLogIn(array|object $data): void
     {
         $data = (object)$data;
@@ -78,17 +97,48 @@ class User extends Model
     {
         $user = $this->findByField("email", $email);
         if(!empty($user)){
-            
+            $this->table = "password_reset";
+            $token = new Token();
+            $hash = $token->getHash();
+            $expiry = date('Y-m-d H:i:s', strtotime('+2 hour'));
 
+        
+            if($reset = $this->findByField("user_id", $user->id)){
+                $this->updateRow($reset->id, ['hash' => $hash, 'expiry' => $expiry]);
+            }else{
+                $this->insert(['user_id' => $user->id, 'hash' => $hash, 'expiry' => $expiry]);
+            }
 
-
-
-
-
-
-
-            
+            $mail = new Mail();
+            $mail->to($user->email, $user->name);
+            $mail->subject('Password Reset');
+            $mail->message("Click the link to reset your password: <a href=\"{$_ENV['URL_ROOT']}/reset/password/{$user->email}/{$hash}\">Reset Password.</a>\nNote: this link will expire in 60 minuites.\n kindly ignore if you did not request this");
+            $mail->send();
         }
         return false;
     }
+
+    public function getPasswordResetRow($id): object|bool
+    {
+        $id = (int)$id;
+        $sql = "SELECT * FROM password_reset WHERE user_id = :user_id";
+        $conn = $this->database->getConnection();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(":user_id", $id, PDO::PARAM_INT);
+        $stmt ->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function sendActivation($user): bool
+    {
+        $sign = $user->created_on;
+        $token = new Token($sign);
+        $token = $token->getHash();
+        $mail = new Mail;
+        $mail->to($user->email, $user->name);
+        $mail->subject("{$_ENV['SITE_NAME']} Account Activation");
+        $mail->message("Click the link to activate your account: <a href=\"{$_ENV['URL_ROOT']}/activate/account/{$user->email}/{$token}\">Activate Account.</a>\n kindly ignore if you did not request this");
+        return $mail->send();
+    }
+   
 }

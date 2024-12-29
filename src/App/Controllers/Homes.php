@@ -12,6 +12,8 @@ use Framework\Helpers\Redirect;
 use Framework\Helpers\Auth;
 use Framework\Helpers\CSRF;
 use Framework\Helpers\Mail;
+use Framework\Helpers\Token;
+use DateTime;
 
 
 
@@ -32,6 +34,7 @@ class Homes extends Controller
         Auth::passRedirect(['url'=>'/dashboard']);
         return $this->view('homes/index.mvc', [
             'success' => Session::flash('success'),
+            'warn' => Session::flash('warn'),
             'auth' => Session::flash('auth_message'),
             'CSRF'=>CSRF::generate()
         ]);
@@ -60,6 +63,8 @@ class Homes extends Controller
         if(empty($this->usersModel->getErrors())){
             $data->password = password_hash($data->password, PASSWORD_DEFAULT); 
             if($this->usersModel->insert($data)){
+                $user = $this->usersModel->findByField('email', $data->email);
+                $this->usersModel->sendActivation($user);
                 Session::set('success','Registration successful: Check your email for verification');
                 return $this->redirect("");
             }else{
@@ -90,15 +95,20 @@ class Homes extends Controller
         if(empty($this->usersModel->getErrors())){
             $user = $this->usersModel->loginUser($data); 
             if(!empty($user)){
-                Auth::login($user);
-                $user->remember_me = $data->remember_me;
-                $this->rememberedLogins->rememberLogin($user);
-                $page = Auth::returnPage();
-                if(!empty($page)){
-                    Redirect::to($page);
+                if($user->active === 0){
+                    Session::set('warn','Account not activated. Kindly check your mail for activation');
+                    return $this->redirect("");
                 }else{
-                    Session::set('success','Login successful');
-                    return $this->redirect("dashboard");
+                    Auth::login($user);
+                    $user->remember_me = $data->remember_me;
+                    $this->rememberedLogins->rememberLogin($user);
+                    $page = Auth::returnPage();
+                    if(!empty($page)){
+                        Redirect::to($page);
+                    }else{
+                        Session::set('success','Login successful');
+                        return $this->redirect("dashboard");
+                    }
                 }
             }else{
                 throw new PageNotFoundException("could not login user");
@@ -150,9 +160,84 @@ class Homes extends Controller
         }
     }
 
+    public function resetPassword($email, $hash): Response
+    {
+        $user = $this->usersModel->findByField('email', $email);
+        $hash_row = $this->usersModel->getPasswordResetRow($user->id);
+        if(!empty($hash_row) && ($hash_row->hash === $hash)){
+            if (strtotime($hash_row->expiry) > time()) {
+                return $this->view('homes/reset-password.mvc', [
+                    'user' => $user,
+                    'hash'=> $hash_row,
+                    'CSRF'=>CSRF::generate()
+                ]);
+            }
+            Session::set('warn','password reset has expired');
+            return $this->redirect("");
+        }
+        return $this->redirect("500");
+
+    }
+
+    public function passwordReset($email, $hash): Response
+    {
+        Redirect::post('');
+        CSRF::check($this->request->post['csrf_token']);
+        $user = $this->usersModel->findByField('email', $email);
+        $hash_row = $this->usersModel->getPasswordResetRow($user->id);
+        $data = [
+            'password' => $this->request->post['password'],
+            'password_again' => $this->request->post['password_again'],
+        ];
+        $data = (object)$data;
+        $this->usersModel->validatePasswordReset($data);
+        if(empty($this->usersModel->getErrors())){
+            if(!empty($user)){
+                $new_password = password_hash($data->password, PASSWORD_DEFAULT); 
+                $this->usersModel->updateRow($user->id, ['password' => $new_password]);
+                $this->usersModel->killRow($hash_row->id, 'password_reset');
+                $mail = new Mail;
+                $mail->to($user->email, $user->name);
+                $mail->subject('Password Reset Successful');
+                $mail->message("Your password has been reset successfully. If you did not request this, kindly contact us immediately");
+                $mail->send();
+                Session::set('success','Password reset successful. Kindly login with your new password');
+                return $this->redirect('');
+            }else{
+                throw new PageNotFoundException("Password Reset was not Successfull");
+            }
+        }else{
+            return $this->view('homes/reset-password.mvc', [
+                'errors'=> (object) $this->usersModel->getErrors(),
+                'user' => $user,
+                'hash'=> $hash_row,
+                'CSRF'=> CSRF::generate()
+            ]);
+        }
+    }
+
+    public function activateAccount($email, $hash): Response
+    {
+        $user = $this->usersModel->findByField('email', $email);
+        if(!empty($user)){
+            if($user->active === 0){
+                $sign = $user->updated_on ?? $user->created_on;
+                $token = new Token($sign);
+                $token = $token->getHash();
+                if($token === $hash){
+                    $this->usersModel->updateRow($user->id, ['active' => 1]);
+                    Session::set('success','Account activated successfully. Kindly login');
+                    return $this->redirect('');
+                }
+            }
+            Session::set('success','Account is active. Kindly login');
+            return $this->redirect("");
+        }
+        return $this->redirect("500");
+    }
+
     public function aboutUs(): Response
     {
-        Auth::failRedirect(['message'=>'Kindly Login to View this page']);
         return $this->view('homes/about-us.mvc', []);
     }
 
