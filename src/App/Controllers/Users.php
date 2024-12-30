@@ -6,7 +6,8 @@ use Framework\Controller;
 use Framework\Response;
 use Framework\Helpers\Auth;
 use Framework\Helpers\Session;
-use Framework\Helpers\Token;
+use Framework\Helpers\CSRF;
+use Framework\Helpers\Data;
 
 class Users extends Controller
 {
@@ -27,23 +28,33 @@ class Users extends Controller
 
     }
    
-    public function create(): Response
+    public function updateProfile(): Response
     {
-        $data = [
-            'name' => $this->request->post['name'],	
-            'email' => $this->request->post['email']
-        ];
-
-        if($this->usersModel->insert($data)){
-            return $this->redirect("users/show/{$this->usersModel->getInsertid()}");
-        }else{
-           
-            return $this->view('users/register.mvc', [
-                'errors' => $this->usersModel->getErrors(),
-                'user' => (object) $data
-            ]);
-        }
+        $user = $this->user;
+        return $this->view('users/update-profile.mvc', [
+            'user' => (object) $user,
+            'CSRF' => CSRF::generate()
+        ]);
     }
+
+    public function profileUpdate(): Response
+    {
+        $user = $this->user;
+        return $this->view('users/update-profile.mvc', [
+            'user' => (object) $user,
+            'CSRF' => CSRF::generate()
+        ]);
+    }
+
+    public function viewProfile(): Response
+    {
+        $user = $this->user;
+        return $this->view('users/view-profile.mvc', [
+            'user' => (object) $user,
+            'time_ago' => Data::timeAgo($user->created_on)
+        ]);
+    }
+
     public function edit(string $id): Response
     {
         $id = (int)$id;

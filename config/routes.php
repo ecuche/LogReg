@@ -24,6 +24,9 @@ $router->add('/admin/{controller}/{method}', ["namespace" => "Admin"]);
 
 // Users Routes
 $router->add("/dashboard", ["controller" => "users", "method" => "dashboard"]);
+$router->add("/profile/update", ["controller" => "users", "method" => "update-profile"]);
+$router->add("/update/profile", ["controller" => "users", "method" => "profile-update", "form" => "post"]);
+$router->add("/profile/view", ["controller" => "users", "method" => "view-profile"]);
 $router->add("/users/profile/{username:\w+([-+.+@']\w+)*}", ["controller" => "users", "method" => "profile"]);
 $router->add('/users/word/{word:[\w-]+}', ["controller" => "users", "method" => "word"]);
 $router->add("/users/emailexists/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}", ["controller" => "users", "method" => "emailExists"]);
