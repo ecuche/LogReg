@@ -93,6 +93,25 @@ class User extends Model
         }
     }
 
+    public function validatePasswordUpdate($data, $user){
+        $data = (object)$data;
+        if(empty($data->old_password) || empty($data->new_password) || empty($data->password_again)){
+            $this->addError('password', "All fields are required");
+        }
+
+        if(empty($this->errors) && !password_verify($data->old_password, $user->password)){
+            $this->addError('password', "Kindly provide the correct old password");
+        }
+
+        if(empty($this->errors) && (preg_match("#^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9A-Za-z]{6,}$#" , $data->new_password)) === 0){
+            $this->addError("password", "Kindly provide a valid Password");
+        }
+
+        if(empty($this->errors) && ($data->new_password !== $data->password_again)){
+            $this->addError("password", "Password does not Match");
+        }
+    }
+
     public function resetAccount($email): bool
     {
         $user = $this->findByField("email", $email);

@@ -8,6 +8,10 @@ use Framework\Helpers\Auth;
 use Framework\Helpers\Session;
 use Framework\Helpers\CSRF;
 use Framework\Helpers\Data;
+use Framework\Helpers\Redirect;
+use Framework\Helpers\Mail;
+use Framework\Exceptions\PageNotFoundException;
+
 
 class Users extends Controller
 {
@@ -53,6 +57,50 @@ class Users extends Controller
             'user' => (object) $user,
             'time_ago' => Data::timeAgo($user->created_on)
         ]);
+    }
+
+    public function passwordUpdate(): Response
+    {
+        $user = $this->user;
+        return $this->view('users/change-password.mvc', [
+            'user' => (object) $user,
+            'CSRF' => CSRF::generate()
+        ]);
+    }
+
+    public function updatePassword(): Response
+    {
+        Redirect::post('');
+        CSRF::check($this->request->post['csrf_token']);
+        $user = $this->user;
+        $data = [
+            'old_password' => $this->request->post['old_password'],
+            'new_password' => $this->request->post['new_password'],
+            'password_again' => $this->request->post['password_again'],
+        ];
+        $data = (object)$data;
+        $this->usersModel->validatePasswordUpdate($data, $user);
+        if(empty($this->usersModel->getErrors())){
+            if(!empty($user)){
+                $new_password = password_hash($data->new_password, PASSWORD_DEFAULT); 
+                $this->usersModel->updateRow($user->id, ['password' => $new_password]);
+                $mail = new Mail;
+                $mail->to($user->email, $user->name);
+                $mail->subject('Password Reset Successful');
+                $mail->message("Your password has been reset successfully. If you did not request this, kindly contact us immediately");
+                $mail->send();
+                Session::set('success','Password reset successful. Kindly login with your new password');
+                return $this->redirect('dashboard');
+            }else{
+                throw new PageNotFoundException("Password Reset was not Successfull");
+            }
+        }else{
+            return $this->view('users/change-password.mvc', [
+                'errors'=> (object) $this->usersModel->getErrors(),
+                'user' => $user,
+                'CSRF'=> CSRF::generate()
+            ]);
+        }
     }
 
     public function edit(string $id): Response

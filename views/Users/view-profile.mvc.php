@@ -21,7 +21,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">{{$user->email}}</h5>
                                     <a href="{{$_ENV['URL_ROOT']}}/profile/update" class="btn btn-primary mb-3" class="btn btn-primary">Edit Profile</a>
-                                    <a href="{{$_ENV['URL_ROOT']}}/password/change" class="btn btn-primary mb-3" class="btn btn-primary">Change Password</a>
+                                    <a href="{{$_ENV['URL_ROOT']}}/update/password" class="btn btn-primary mb-3" class="btn btn-primary">Change Password</a>
                                 </div>
                                 <div class="card-footer text-muted">
                                     Joined: {{$time_ago}}
