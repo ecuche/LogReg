@@ -34,4 +34,9 @@ abstract class Controller
         $this->response->redirect($url);
         return $this->response;
     } 
+
+    public function raw(string $template, array $data = []) : string
+    {
+        return $this->viewer->render($template, $data);
+    }
 }

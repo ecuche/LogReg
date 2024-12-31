@@ -33,7 +33,6 @@ class Dispatcher
         $controller_handler = new ControllerRequestHandler($controller, $method, $args);
         $middleware = $this->getMiddleware($params);
        
-
         $middleware_handler = new MiddlewareRequestHandler($middleware, $controller_handler);
         return $middleware_handler->handle($request);
     }
@@ -46,7 +45,6 @@ class Dispatcher
             $name = $parameter->getName();
             $args[$name] = $params[$name];
         }
-
         return $args;
     }
 
@@ -55,7 +53,6 @@ class Dispatcher
         $controller = strtolower($params['controller']);
         $controller = ucwords($controller, "-");
         $controller = str_replace("-", "", $controller);
-
         $namespace = "App\Controllers";
 
         if(array_key_exists("namespace", $params)){

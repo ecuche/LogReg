@@ -295,15 +295,15 @@ class Homes extends Controller
         return $this->view('500.mvc', []);
     }
 
-    public function test() : Response  
+    public function test()  
     {
-        $mail = new Mail;
-        $mail->to('ecuche@gmail.com', 'ucheeee');
-        $mail->subject('test mail from my mail class');
-        $mail->message("<a href=\"{$_ENV['URL_ROOT']}\">click here to visit our homepage</a>", true);
-        // $mail->attachment($_ENV["FILES_PATH"]. 'TEST.JS');
-        $mail->send();
-
+        
+    $mail = new Mail;
+    $mail->to('ecuche@gmail.com');
+    $mail->subject('try html');
+    $html = $this->raw('500.mvc', []);
+    $mail->message('html', $html);
+    $mail->send();
 
 
 
