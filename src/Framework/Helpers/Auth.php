@@ -35,7 +35,7 @@ class Auth
 
         if(self::isLoggedIn()){
             self::intendedPage();
-            Session::set('auth_message', $args['message']);
+            Session::set('warn', $args['message']);
             Redirect::to($args['url']);
         }
         return false;
@@ -52,7 +52,7 @@ class Auth
         }
         if(!self::isLoggedIn()){
             self::intendedPage();
-            Session::set('auth_message', $args['message']);
+            Session::set('warn', $args['message']);
             Redirect::to($args['url']);
         }
         return false;
@@ -67,10 +67,13 @@ class Auth
         return $id && $email && $name ? true : false;
     }
 
-    public static function logout(string $message): bool
+    public static function logout(string $message = ''): bool
     {   
         Cookie::delete('remember_me');
-        $result = Session::destroy();
+        // $result = Session::destroy();
+        $result = Session::delete('id');
+        Session::delete('email');
+        Session::delete('username');
         Session::set('success', $message); 
         return $result;  
     }

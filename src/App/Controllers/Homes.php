@@ -34,7 +34,6 @@ class Homes extends Controller
         return $this->view('homes/index.mvc', [
             'success' => Session::flash('success'),
             'warn' => Session::flash('warn'),
-            'auth' => Session::flash('auth_message'),
             'CSRF'=>CSRF::generate()
         ]);
     }
@@ -127,7 +126,8 @@ class Homes extends Controller
     {
         $this->rememberedLogins->deleteRememberMe(Session::get('id'));
         Auth::logout('You have logged out Successfully');
-        Redirect::to('');
+        Session::set('success','You have logged out Successfully');
+        return $this->redirect("");
     }
 
     public function forgotPassword(): Response
@@ -224,15 +224,18 @@ class Homes extends Controller
                 $token = new Token($sign);
                 $token = $token->getHash();
                 if($token === $hash){
-                    $this->usersModel->updateRow($user->id, ['active' => 1]);
-                    Session::set('success','Account activated successfully. Kindly login');
-                    return $this->redirect('');
+                    if($this->usersModel->updateRow($user->id, ['active'=>1])){
+                        Session::set('success','Account activated successfully. Kindly login');
+                        return $this->redirect('');
+                    }
                 }
+                return $this->redirect("500");
             }
             Session::set('success','Account is active. Kindly login');
             return $this->redirect("");
+        }else{
+            return $this->redirect("500");
         }
-        return $this->redirect("500");
     }
 
     public function aboutUs(): Response

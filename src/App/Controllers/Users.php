@@ -11,6 +11,7 @@ use Framework\Helpers\Data;
 use Framework\Helpers\Redirect;
 use Framework\Helpers\Mail;
 use Framework\Exceptions\PageNotFoundException;
+use App\Controllers\Homes;
 
 
 class Users extends Controller
@@ -43,11 +44,44 @@ class Users extends Controller
 
     public function profileUpdate(): Response
     {
+        Redirect::post('');
+        CSRF::check($this->request->post['csrf_token']);
         $user = $this->user;
-        return $this->view('users/update-profile.mvc', [
-            'user' => (object) $user,
-            'CSRF' => CSRF::generate()
-        ]);
+        $data = [
+            'name' => $this->request->post['name'],
+            'email' => $this->request->post['email'],
+        ];
+
+        
+        $data = (object)$data;
+        $this->usersModel->validateProfileUpdate($data);
+        
+        if(empty($this->usersModel->getErrors())){
+            if(!empty($user)){
+
+                $this->usersModel->updateRow($user->id, ['name' => $data->name]);
+                if($user->email !== $data->email){
+                    $this->usersModel->updateRow($user->id, ['email' => $data->email, 'active'=>0]);
+                    $this->usersModel->killByfield('user_id', $user->id, 'remembered_logins');
+                    $user = $this->usersModel->findById($user->id);
+                    $this->usersModel->sendActivation($user);
+                    Auth::logout('Email reset successful. Kindly check your email to activate your account');
+                    return $this->redirect('');
+                }
+                Session::set('success','Your name has been updated');
+                return $this->redirect('dashboard');
+            }else{
+                throw new PageNotFoundException("Password Reset was not Successfull");
+            }
+        }else{
+            $user->name = $data->name;
+            $user->email = $data->email;
+            return $this->view('users/update-profile.mvc', [
+                'errors'=> (object) $this->usersModel->getErrors(),
+                'user' => $user,
+                'CSRF'=> CSRF::generate()
+            ]);
+        }
     }
 
     public function viewProfile(): Response

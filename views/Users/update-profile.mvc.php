@@ -1,6 +1,6 @@
 {% extends "users/users-base.mvc" %}
 
-{% block title %} Dashboard {% endblock %}
+{% block title %} Update Profile {% endblock %}
 {% block body %}
 <section class="py-5">
         <div class="container py-5">
@@ -15,10 +15,11 @@
                         </div>
                         <form method="post" action="{{URL_ROOT}}/update/profile">
                                 <div class="mb-3">
-                                    <input class="form-control" type="email" name="email" value="{{$user->email}}" placeholder="Email" required disabled>
+                                    <input class="form-control {% echo !empty($errors->email) ? 'is-invalid' : ''; %}" type="email" name="email" value="{{$user->email}}" placeholder="Email" required>
+                                    <div class="invalid-feedback">{{$errors->email}}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <input class="form-control {% echo !empty($errors->email) ? 'is-invalid' : ''; %}" type="text" name="name" value="{{$user->name}}" placeholder="Name" required>
+                                    <input class="form-control {% echo !empty($errors->name) ? 'is-invalid' : ''; %}" type="text" name="name" value="{{$user->name}}" placeholder="Name" required>
                                     <div class="invalid-feedback">{{$errors->name}}</div>
                                 </div>
                                 <?=  $CSRF ?>

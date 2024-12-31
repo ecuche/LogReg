@@ -220,7 +220,7 @@ abstract class Model
         $conn = $this->database->getConnection();
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        return $stmt ->execute();
+        return $stmt->execute();
     }
 
     public function deleteByfield(string $field, mixed $value, string $table = null): bool
@@ -230,7 +230,7 @@ abstract class Model
         $conn = $this->database->getConnection();
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":field_value", $value, PDO::PARAM_INT);
-        return $stmt ->execute();
+        return $stmt->execute();
     }
 
     public function killRow(int $id, string $table = null): bool
@@ -240,7 +240,7 @@ abstract class Model
         $conn = $this->database->getConnection();
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        return $stmt ->execute();
+        return $stmt->execute();
     }
 
     public function killByfield(string $field, mixed $value, string $table = null): bool
@@ -250,7 +250,7 @@ abstract class Model
         $conn = $this->database->getConnection();
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":field_value", $value, PDO::PARAM_INT);
-        return $stmt ->execute();
+        return $stmt->execute();
     }
 
     public function recoverRow(int $id, string $table = null): bool
@@ -260,7 +260,7 @@ abstract class Model
         $conn = $this->database->getConnection();
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        return $stmt ->execute();
+        return $stmt->execute();
     }
 
     public function rowCount(string $table = null): int

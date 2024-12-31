@@ -11,7 +11,6 @@
                             <div class="bs-icon-xl bs-icon-circle bs-icon-primary shadow bs-icon my-4">
                                 <i class="bi-person-fill"></i>
                             </div>
-                            <form method="post" action="{{URL_ROOT}}/log-in-user">
                                 {% if(!empty($success)): %}
                                 <div class="alert alert-success" role="alert">
                                     {{$success}}
@@ -22,17 +21,12 @@
                                     {{$warn}}
                                 </div>
                                 {% endif; %}
-                                {% if(!empty($auth)): %}
-                                <div class="alert alert-warning" role="alert">
-                                    {{$auth}}
-                                </div>
-                                {% endif; %}
                                 {% if(!empty($errors->login)): %}
                                 <div class="alert alert-danger" role="alert">
                                     {{$errors->login}}
                                 </div>
-                                {% endif; %} 
-
+                                {% endif; %}
+                            <form method="post" action="{{URL_ROOT}}/log-in-user">
                                 <div class="mb-3">
                                     <input class="form-control {% echo !empty($errors->email) || !empty($errors->login) ? 'is-invalid' : ''; %}" type="email" name="email" value="{{$user->email}}" placeholder="Email" required>
                                     <div class="invalid-feedback">{{$errors->email}}</div>

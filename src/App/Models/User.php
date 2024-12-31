@@ -112,6 +112,18 @@ class User extends Model
         }
     }
 
+    public function validateProfileUpdate($data){
+        $data = (object)$data;
+
+        if(empty($data->name)){
+            $this->addError('name', "Full Name field is required");
+        }
+
+        if(filter_var($data->email, FILTER_VALIDATE_EMAIL) === false){
+            $this->addError("email", "Enter a valid email address");
+        }
+    }
+
     public function resetAccount($email): bool
     {
         $user = $this->findByField("email", $email);
@@ -150,7 +162,7 @@ class User extends Model
 
     public function sendActivation($user): bool
     {
-        $sign = $user->created_on;
+        $sign = $user->updated_on ?? $user->created_on; 
         $token = new Token($sign);
         $token = $token->getHash();
         $mail = new Mail;

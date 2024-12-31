@@ -1,6 +1,6 @@
 {% extends "users/users-base.mvc" %}
 
-{% block title %} Dashboard {% endblock %}
+{% block title %} View Profile {% endblock %}
 {% block body %}
 <section class="py-5">
         <div class="container py-5">
