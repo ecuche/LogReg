@@ -18,8 +18,8 @@ class Mail
     protected string $attachments = "";
     protected string $boundary = "";
     protected bool $is_html = false;
-    protected string $html = "";
-    protected string $html_message = "";
+    protected string $text = "";
+    protected string $body = "";
 
     public function __construct(){
         $this->boundary = md5(date('r', time()));
@@ -113,16 +113,16 @@ class Mail
         return $this->subject = ucwords($subject);
     }
 
-    public function message(string $message, bool $html = true): string
+    public function message(string $message): string
     {   
+        $this->body = $message;    
+
         $this->message .= "--{$this->boundary}\r\n";
         $this->message .= "Content-Type: multipart/alternative; boundary=alt-{$this->boundary}\r\n\r\n";
 
-        $this->message .= "--alt-{$this->boundary}\r\n";
-        $this->message .= "Content-Type: text/plain; charset=iso-8859-1\r\n"; 
-        $this->message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-        $this->message .= "{$message} \r\n\r\n";
-        $this->html_message = $message;    
+        $this->text($this->body);
+
+       
         return  $this->message;
     }
 
@@ -132,14 +132,13 @@ class Mail
         if(empty($this->to)) {return "Kindly add a recipeint address";}
 
         if ($this->is_html){
-            $this->html($this->html_message);
-            $this->message .= $this->html;
+            $this->text($this->body, 'html');
         }
-        $this->message .= "\r\n\r\n--alt-{$this->boundary}--\r\n\r\n";
+        $this->message .= "--alt-{$this->boundary}--\r\n\r\n";
         $message = "";
-        $message .= "{$this->message} \r\n\r\n";
+        $message .= $this->message;
 
-        $message .= "{$this->attachments} \r\n\r\n";
+        $message .= $this->attachments;
         $message .= "--{$this->boundary}--"; 
 
         return mail($this->to, $this->subject, $message,  $this->headers) ? true : false;
@@ -149,15 +148,15 @@ class Mail
     {        
         return $this->is_html = true;
     }
-    
-    public function html($html): string
-    {
+
+    public function text(string $plain, string $type = 'plain'): string{
         $message = "";
         $message .= "--alt-{$this->boundary}\r\n";
-        $message .= "Content-Type: text/html; charset=iso-8859-1\r\n"; 
+        $message .= "Content-Type: text/{$type}; charset=iso-8859-1\r\n"; 
         $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-        $message .= $html;
-        return $this->html = $message;
+        $message .= "{$plain} \r\n\r\n";
+        $this->message .= $message;
+        return $this->text = $plain;
     }
 
     public function headers(): array
@@ -167,15 +166,17 @@ class Mail
 
     public function attachment(string $fullpath): string
     {
-        $content = file_get_contents( $fullpath);
-        $content = chunk_split(base64_encode($content));
-        $file_name = basename($fullpath);
+        if(!empty($fullpath) && file_exists($fullpath)){
+            $content = file_get_contents( $fullpath);
+            $content = chunk_split(base64_encode($content));
+            $file_name = basename($fullpath);
 
-        $this->attachments .= "--{$this->boundary}\r\n";
-        $this->attachments .= "Content-Type: application/octet-stream; name=\"{$file_name}\"\r\n";
-        $this->attachments .= "Content-Transfer-Encoding: base64 \r\n";
-        $this->attachments .= "Content-Disposition: attachment; filename=\"{$file_name}\" \r\n\r\n";
-        $this->attachments .= $content;
+            $this->attachments .= "--{$this->boundary}\r\n";
+            $this->attachments .= "Content-Type: application/octet-stream; name=\"{$file_name}\"\r\n";
+            $this->attachments .= "Content-Transfer-Encoding: base64 \r\n";
+            $this->attachments .= "Content-Disposition: attachment; filename=\"{$file_name}\" \r\n\r\n";
+            $this->attachments .= "{$content}  \r\n\r\n";
+        }
         return $this->attachments;
     }   
 }
