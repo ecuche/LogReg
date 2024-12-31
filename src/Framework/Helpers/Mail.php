@@ -17,7 +17,9 @@ class Mail
     protected array $headers = [];
     protected string $attachments = "";
     protected string $boundary = "";
+    protected bool $is_html = false;
     protected string $html = "";
+    protected string $html_message = "";
 
     public function __construct(){
         $this->boundary = md5(date('r', time()));
@@ -111,7 +113,7 @@ class Mail
         return $this->subject = ucwords($subject);
     }
 
-    public function message(string $message, bool|string $html = true): string
+    public function message(string $message, bool $html = true): string
     {   
         $this->message .= "--{$this->boundary}\r\n";
         $this->message .= "Content-Type: multipart/alternative; boundary=alt-{$this->boundary}\r\n\r\n";
@@ -119,49 +121,43 @@ class Mail
         $this->message .= "--alt-{$this->boundary}\r\n";
         $this->message .= "Content-Type: text/plain; charset=iso-8859-1\r\n"; 
         $this->message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-        $this->message .= "{$message} \r\n\r\n";    
-
-        if ($html === true || is_string($html)) {
-            $this->message .= "--alt-{$this->boundary}\r\n";
-            $this->message .= "Content-Type: text/html; charset=iso-8859-1\r\n"; 
-            $this->message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-            if($html === true){
-                $this->message .= $this->html($message);                
-            }elseif(is_string($html)){
-                $this->message .= $html;
-            }
-        }
-        $this->message .= "\r\n\r\n--alt-{$this->boundary}--\r\n\r\n";
+        $this->message .= "{$message} \r\n\r\n";
+        $this->html_message = $message;    
         return  $this->message;
     }
 
     public function send(): bool|array|string
     {
         if(!empty($this->errors)) {return $this->errors;}
-        if(empty($this->to)) {return "Kindly add a recipeint address";}  
+        if(empty($this->to)) {return "Kindly add a recipeint address";}
 
+        if ($this->is_html){
+            $this->html($this->html_message);
+            $this->message .= $this->html;
+        }
+        $this->message .= "\r\n\r\n--alt-{$this->boundary}--\r\n\r\n";
         $message = "";
-        $message .= "{$this->message} \r\n\r\n"; 
+        $message .= "{$this->message} \r\n\r\n";
+
         $message .= "{$this->attachments} \r\n\r\n";
         $message .= "--{$this->boundary}--"; 
 
         return mail($this->to, $this->subject, $message,  $this->headers) ? true : false;
     }
 
-    public function html($message): string
+    public function is_html(): bool
     {        
-        $html = '<!DOCTYPE html>
-                    <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Mail from '.$_ENV['SITE_NAME'].' </title>
-                        </head>
-                        <body>
-                            '.$message.'
-                        </body>
-                    </html>';
-        return $this->html = $html;
+        return $this->is_html = true;
+    }
+    
+    public function html($html): string
+    {
+        $message = "";
+        $message .= "--alt-{$this->boundary}\r\n";
+        $message .= "Content-Type: text/html; charset=iso-8859-1\r\n"; 
+        $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+        $message .= $html;
+        return $this->html = $message;
     }
 
     public function headers(): array

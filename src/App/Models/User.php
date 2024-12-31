@@ -143,6 +143,7 @@ class User extends Model
             $mail = new Mail();
             $mail->to($user->email, $user->name);
             $mail->subject('Password Reset');
+            $mail->is_html();
             $mail->message("Click the link to reset your password: <a href=\"{$_ENV['URL_ROOT']}/reset/password/{$user->email}/{$hash}\">Reset Password.</a>\nNote: this link will expire in 60 minuites.\n kindly ignore if you did not request this");
             $mail->send();
         }
@@ -168,6 +169,7 @@ class User extends Model
         $mail = new Mail;
         $mail->to($user->email, $user->name);
         $mail->subject("{$_ENV['SITE_NAME']} Account Activation");
+        $mail->is_html();
         $mail->message("Click the link to activate your account: <a href=\"{$_ENV['URL_ROOT']}/activate/account/{$user->email}/{$token}\">Activate Account.</a>\n kindly ignore if you did not request this");
         return $mail->send();
     }

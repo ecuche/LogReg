@@ -122,6 +122,7 @@ class Users extends Controller
                 $mail->to($user->email, $user->name);
                 $mail->subject('Password Reset Successful');
                 $mail->message("Your password has been reset successfully. If you did not request this, kindly contact us immediately");
+                $mail->is_html();
                 $mail->send();
                 Session::set('success','Password reset successful. Kindly login with your new password');
                 return $this->redirect('dashboard');

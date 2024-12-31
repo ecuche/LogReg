@@ -198,6 +198,7 @@ class Homes extends Controller
                 $mail = new Mail;
                 $mail->to($user->email, $user->name);
                 $mail->subject('Password Reset Successful');
+                $mail->is_html();
                 $mail->message("Your password has been reset successfully. If you did not request this, kindly contact us immediately");
                 $mail->send();
                 Session::set('success','Password reset successful. Kindly login with your new password');
@@ -302,7 +303,8 @@ class Homes extends Controller
     $mail->to('ecuche@gmail.com');
     $mail->subject('try html');
     $html = $this->raw('500.mvc', []);
-    $mail->message('html', $html);
+    $mail->message($html);
+    $mail->is_html();
     $mail->send();
 
 
