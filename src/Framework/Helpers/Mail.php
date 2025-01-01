@@ -149,11 +149,13 @@ class Mail
             $this->attachments .= "Content-Transfer-Encoding: base64 \r\n";
             $this->attachments .= "Content-Disposition: attachment; filename=\"{$file_name}\" \r\n\r\n";
             $this->attachments .= "{$content}  \r\n\r\n";
+        }elseif(!empty($fullpath) && !file_exists($fullpath)){
+            return $this->addError('attachment', "Invalid file path");
         }
         return $this->attachments;
     }   
 
-    private function erros(): bool|string
+    private function errors(): bool|string
     {
         if(empty($this->to)){
             return $this->addError('to', "Kindly add a recipeint address");
@@ -172,7 +174,7 @@ class Mail
 
     private function prepare(): array|string
     {   
-        $this->erros();
+        $this->errors();
         if(!empty($this->errors)){
             return $this->errors;
         }
@@ -191,7 +193,11 @@ class Mail
     public function send(): bool|array|string
     {
         $this->prepare();
-        return mail($this->to, $this->subject, $this->message,  $this->headers) ? true : false;
+        $mail = @mail($this->to, $this->subject, $this->message,  $this->headers) ? true : false;
+        if($mail){
+            return true;
+        }
+        return $this->errors;
     }
 }
 

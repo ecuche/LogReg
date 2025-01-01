@@ -305,6 +305,7 @@ class Homes extends Controller
     $html = $this->raw('500.mvc', []);
     $mail->message($html);
     $mail->is_html();
+    $mail->attachment('C:\Users\cousin\Desktop\attachment.zip');
     $mail->send();
 
 
