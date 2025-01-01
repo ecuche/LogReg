@@ -30,13 +30,13 @@ class Mail
         $this->headers['Content-Type'] = "multipart/mixed; boundary={$this->boundary}";
     }
 
-    protected function addError(string $field, string $message): string
+    private function addError(string $field, string $message): string
     {
         $this->errors[$field] = $message;
         return $this->errors[$field];
     }
    
-    protected function address(string $type, string|object|array $email, string $name = ""): string
+    private function address(string $type, string|object|array $email, string $name = ""): string
     {
         $emails = $type;
         if (is_array($email) || is_object($email)) {
@@ -113,37 +113,6 @@ class Mail
         return $this->subject = ucwords($subject);
     }
 
-    public function message(string $message): string
-    {   
-        $this->body = $message;    
-
-        $this->message .= "--{$this->boundary}\r\n";
-        $this->message .= "Content-Type: multipart/alternative; boundary=alt-{$this->boundary}\r\n\r\n";
-
-        $this->text($this->body);
-
-       
-        return  $this->message;
-    }
-
-    public function send(): bool|array|string
-    {
-        if(!empty($this->errors)) {return $this->errors;}
-        if(empty($this->to)) {return "Kindly add a recipeint address";}
-
-        if ($this->is_html){
-            $this->text($this->body, 'html');
-        }
-        $this->message .= "--alt-{$this->boundary}--\r\n\r\n";
-        $message = "";
-        $message .= $this->message;
-
-        $message .= $this->attachments;
-        $message .= "--{$this->boundary}--"; 
-
-        return mail($this->to, $this->subject, $message,  $this->headers) ? true : false;
-    }
-
     public function is_html(): bool
     {        
         return $this->is_html = true;
@@ -159,9 +128,13 @@ class Mail
         return $this->text = $plain;
     }
 
-    public function headers(): array
-    {
-        return $this->headers;
+    public function message(string $message): string
+    {   
+        $this->body = $message;    
+        $this->message .= "--{$this->boundary}\r\n";
+        $this->message .= "Content-Type: multipart/alternative; boundary=alt-{$this->boundary}\r\n\r\n";
+        $this->text($this->body);
+        return  $this->message;
     }
 
     public function attachment(string $fullpath): string
@@ -179,6 +152,47 @@ class Mail
         }
         return $this->attachments;
     }   
+
+    private function erros(): bool|string
+    {
+        if(empty($this->to)){
+            return $this->addError('to', "Kindly add a recipeint address");
+        }
+        if(empty($this->subject)){
+            return $this->addError('subject', "Kindly add a subject");
+        }
+        if(empty($this->body)){
+            return $this->addError('message', "Kindly add a message");
+        }
+       if(empty($this->from)){
+            return $this->addError('from', "Kindly add a sender address");
+        }
+        return true;
+    }
+
+    private function prepare(): array|string
+    {   
+        $this->erros();
+        if(!empty($this->errors)){
+            return $this->errors;
+        }
+        $this->is_html ? $this->text($this->body, 'html') : null ;
+        
+        $this->message .= "--alt-{$this->boundary}--\r\n\r\n";
+        $message = "";
+        $message .= $this->message;
+
+        $message .= $this->attachments;
+        $message .= "--{$this->boundary}--"; 
+        $this->message = $message;
+        return $message;
+    }
+
+    public function send(): bool|array|string
+    {
+        $this->prepare();
+        return mail($this->to, $this->subject, $this->message,  $this->headers) ? true : false;
+    }
 }
 
 
