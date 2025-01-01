@@ -11,8 +11,29 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
+    {% if(isset($_SESSION['id'])): %}
+
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">{% echo ucwords($_SESSION["name"]) %}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      {% endif; %}  
+
       <div class="offcanvas-body">
         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+        {% if(isset($_SESSION['id'])): %}
+        <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/profile/view'}}">My Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/contact'}}">Contact Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/about-us'}}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/Logout'}}">Logout</a>
+        {% else: %}  
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/contact'}}">Contact Us</a>
           </li>
@@ -22,6 +43,8 @@
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/register'}}">Register</a>
           </li>
+        {% endif; %}  
+
         </ul>
       </div>
     </div>

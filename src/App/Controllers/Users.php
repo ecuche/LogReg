@@ -24,13 +24,12 @@ class Users extends Controller
     }
 
     public function dashboard(): Response         
-    {
-        Auth::failRedirect(['message'=>'Kindly Login to View this page']);
+    { 
+        Auth::failRedirect();
         return $this->view('users/dashboard.mvc', [
             'user' => $this->user,
             'success' => Session::flash('success')
         ]);
-
     }
    
     public function updateProfile(): Response

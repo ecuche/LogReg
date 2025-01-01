@@ -31,6 +31,7 @@ class Homes extends Controller
     public function index(): Response
     {
         Auth::passRedirect(['url'=>'/dashboard']);
+        
         return $this->view('homes/index.mvc', [
             'success' => Session::flash('success'),
             'warn' => Session::flash('warn'),
@@ -88,7 +89,6 @@ class Homes extends Controller
             'remember_me' => isset($this->request->post['remember_me']),
         ];
         $data = (object)$data;
-        
         $this->usersModel->validateLogIn($data);
         if(empty($this->usersModel->getErrors())){
             $user = $this->usersModel->loginUser($data); 
@@ -102,7 +102,8 @@ class Homes extends Controller
                     $this->rememberedLogins->rememberLogin($user);
                     $page = Auth::returnPage();
                     if(!empty($page)){
-                        Redirect::to($page);
+                        
+                        return $this->redirect($page);
                     }else{
                         Session::set('success','Login successful');
                         return $this->redirect("dashboard");
@@ -299,14 +300,14 @@ class Homes extends Controller
     public function test()  
     {
         
-    $mail = new Mail;
-    $mail->to('ecuche@gmail.com');
-    $mail->subject('try html');
-    $html = $this->raw('500.mvc', []);
-    $mail->message($html);
-    $mail->is_html();
-    $mail->attachment('C:\Users\cousin\Desktop\attachment.zip');
-    $mail->send();
+        $mail = new Mail;
+        $mail->to('ecuche@gmail.com');
+        $mail->subject('try html');
+        $html = $this->raw('500.mvc', []);
+        $mail->message($html);
+        $mail->is_html();
+        $mail->attachment('C:\Users\cousin\Desktop\attachment.zip');
+        $mail->send();
 
 
 

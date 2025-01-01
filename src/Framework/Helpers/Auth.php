@@ -14,9 +14,9 @@ class Auth
 
     public static function isLoggedIn(): bool
     {
-        $id = Session::exists('id') ? Session::get('id') : false;
-        $email = Session::exists('email') ? Session::get('email') : false;
-        $username = Session::exists('username') ? Session::get('username') : false;
+        $id = Session::get('id') ?? false;
+        $email = Session::get('email') ?? false;
+        $username = Session::get('username') ?? false;
         if($id && ($email || $username)){
             return true;
         }
@@ -44,7 +44,7 @@ class Auth
     public static function failRedirect(array|object $args = []): null|bool
     {
         $args = (array) $args;
-        $default = ['url'=>'', 'message'=> 'Kindly Logout to View this page'];
+        $default = ['url'=>'', 'message'=> 'Kindly Login to View this page'];
         foreach ($default as $key => $value){
             if(empty($args[$key])){
                 $args[$key] = $value;

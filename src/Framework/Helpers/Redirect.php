@@ -57,7 +57,7 @@ class Redirect{
         public static function post($url = ''): void  
         {
                 if(empty($_POST)){
-                self::to($url);
+                        self::to($url);
                 }
         }
 }

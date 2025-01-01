@@ -1,4 +1,4 @@
-{% extends "users/users-base.mvc" %}
+{% extends "base.mvc" %}
 
 {% block title %} Update Profile {% endblock %}
 {% block body %}
