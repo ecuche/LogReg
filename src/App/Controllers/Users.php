@@ -8,11 +8,8 @@ use Framework\Helpers\Auth;
 use Framework\Helpers\Session;
 use Framework\Helpers\CSRF;
 use Framework\Helpers\Data;
-use Framework\Helpers\Redirect;
 use Framework\Helpers\Mail;
 use Framework\Exceptions\PageNotFoundException;
-use App\Controllers\Homes;
-
 
 class Users extends Controller
 {
@@ -25,7 +22,6 @@ class Users extends Controller
 
     public function dashboard(): Response         
     { 
-        Auth::failRedirect();
         return $this->view('users/dashboard.mvc', [
             'user' => $this->user,
             'success' => Session::flash('success')
@@ -43,7 +39,6 @@ class Users extends Controller
 
     public function profileUpdate(): Response
     {
-        Redirect::post('');
         CSRF::check($this->request->post['csrf_token']);
         $user = $this->user;
         $data = [
@@ -103,7 +98,6 @@ class Users extends Controller
 
     public function updatePassword(): Response
     {
-        Redirect::post('');
         CSRF::check($this->request->post['csrf_token']);
         $user = $this->user;
         $data = [

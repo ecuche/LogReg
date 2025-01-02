@@ -3,16 +3,16 @@ $router = new Framework\Router;
 
 // Homes Routes
 $router->add('/', ["controller" => "homes", "method" => "index"]);
-$router->add('/register', ["controller" => "homes", "method" => "register"]);
-$router->add('/forgot-password', ["controller" => "homes", "method" => "forgot-password"]);
-$router->add('/register-new-user', ["controller" => "homes", "method" => "register-new-user"]);
-$router->add('/log-in-user', ["controller" => "homes", "method" => "log-in-user"]);
-$router->add('/recover-account', ["controller" => "homes", "method" => "recover-account"]);
-$router->add("/reset/password/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}/{hash:[a-zA-Z0-9]{64}}", ["controller" => "homes", "method" => "reset-password"]);
-$router->add("/password/reset/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}/{hash:[a-zA-Z0-9]{64}}", ["controller" => "homes", "method" => "password-reset"]);
+$router->add('/register', ["controller" => "homes", "method" => "register", "auth"=>false]);
+$router->add('/forgot-password', ["controller" => "homes", "method" => "forgot-password", "auth"=>false]);
+$router->add('/register-new-user', ["controller" => "homes", "method" => "register-new-user", "form"=> "post"]);
+$router->add('/log-in-user', ["controller" => "homes", "method" => "log-in-user", "form"=> "post"]);
+$router->add('/recover-account', ["controller" => "homes", "method" => "recover-account", "form"=> "post"]);
+$router->add("/reset/password/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}/{hash:[a-zA-Z0-9]{64}}", ["controller" => "homes", "method" => "reset-password", "auth"=>false]);
+$router->add("/password/reset/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}/{hash:[a-zA-Z0-9]{64}}", ["controller" => "homes", "method" => "password-reset", "form"=> "post"]);
 $router->add("/activate/account/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}/{hash:[a-zA-Z0-9]{64}}", ["controller" => "homes", "method" => "activate-account"]);
 $router->add('/logout', ["controller" => "homes", "method" => "log-out-user"]);
-$router->add('/contact-us', ["controller" => "homes", "method" => "contact-us"]);
+$router->add('/contact-us', ["controller" => "homes", "method" => "contact-us", "form"=> "post"]);
 $router->add('/contact', ["controller" => "homes", "method" => "contact"]);
 $router->add('/about-us', ["controller" => "homes", "method" => "about-us"]);
 $router->add('/404', ["controller" => "homes", "method" => "e404"]);
@@ -23,12 +23,12 @@ $router->add('/test', ["controller" => "homes", "method" => "test"]);
 $router->add('/admin/{controller}/{method}', ["namespace" => "Admin"]);
 
 // Users Routes
-$router->add("/dashboard", ["controller" => "users", "method" => "dashboard"]);
-$router->add("/profile/update", ["controller" => "users", "method" => "update-profile"]);
+$router->add("/dashboard", ["controller" => "users", "method" => "dashboard", "auth"=>true]);
+$router->add("/profile/update", ["controller" => "users", "method" => "update-profile", "auth"=>true]);
 $router->add("/update/profile", ["controller" => "users", "method" => "profile-update", "form" => "post"]);
-$router->add("/profile/view", ["controller" => "users", "method" => "view-profile"]);
-$router->add("/update/password", ["controller" => "users", "method" => "password-update"]);
-$router->add("/password/update", ["controller" => "users", "method" => "update-password"]);
+$router->add("/profile/view", ["controller" => "users", "method" => "view-profile", "auth"=>true]);
+$router->add("/update/password", ["controller" => "users", "method" => "password-update", "auth"=>true]);
+$router->add("/password/update", ["controller" => "users", "method" => "update-password", "form" => "post"]);
 $router->add("/users/profile/{username:\w+([-+.+@']\w+)*}", ["controller" => "users", "method" => "profile"]);
 $router->add('/users/word/{word:[\w-]+}', ["controller" => "users", "method" => "word"]);
 $router->add("/users/emailexists/{email:\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*}", ["controller" => "users", "method" => "emailExists"]);

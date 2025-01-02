@@ -2,7 +2,7 @@
     <div class="container py-1 py-lg-1">
         <hr>
         <div class="text-muted d-flex justify-content-between align-items-center pt-3">
-            <p class="mb-0">Copyright © 2024 {{SITE_NAME}}</p>
+            <p class="mb-0">Copyright © 2025 {{SITE_NAME}}</p>
             <ul class="list-inline mb-0">
                 <li class="list-inline-item">
                     <i class="bi-facebook"></i>

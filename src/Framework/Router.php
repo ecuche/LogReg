@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace Framework;
+use Framework\Helpers\Auth;
 class Router
 {
     private array $routes = [];
@@ -13,7 +14,6 @@ class Router
         ];
     }
 
-
     public function match(string $path, string $form): array|bool
     {
         $path = urldecode($path);
@@ -23,6 +23,13 @@ class Router
             if(preg_match($pattern, $path, $matches)){
                 $matches = array_filter($matches, "is_string", ARRAY_FILTER_USE_KEY);
                 $params = array_merge($matches, $route['params']);
+                if(array_key_exists("auth", $params)){                 
+                    if($params["auth"] === true && !Auth::isLoggedIn()){
+                        continue;
+                    }elseif($params["auth"] === false && Auth::isLoggedIn()){
+                        continue;
+                    }
+                }
                 if(array_key_exists("form", $params)){                 
                     if(strtolower($form) !== strtolower($params["form"])){
                         continue;

@@ -23,14 +23,14 @@ class Homes extends Controller
         if(!Auth::isLoggedIn()){
             if($rememberedLogins->loginFromRemeberCookie()){
                 Session::set("success", 'Welcome back');
-                Redirect::to("/dashboard");
+                Redirect::to("dashboard");
             }
         }
     }
 
     public function index(): Response
     {
-        Auth::passRedirect(['url'=>'/dashboard']);
+        Auth::passRedirect(['url'=>'dashboard']);
         
         return $this->view('homes/index.mvc', [
             'success' => Session::flash('success'),
@@ -41,7 +41,6 @@ class Homes extends Controller
 
     public function register(): Response
     {
-        Auth::passRedirect(['url'=>'/dashboard']);
         return $this->view('homes/register.mvc', [
             'CSRF'=>CSRF::generate()
         ]);
@@ -49,7 +48,6 @@ class Homes extends Controller
 
     public function registerNewUser(): Response
     {
-        Redirect::post('');
         CSRF::check($this->request->post['csrf_token']);
         $data = [
             'name' => $this->request->post['name'],	
@@ -81,7 +79,6 @@ class Homes extends Controller
 
     public function logInUser(): Response
     {
-        Redirect::post('');
         CSRF::check($this->request->post['csrf_token']);
         $data = [
             'email' => $this->request->post['email'],
@@ -140,7 +137,6 @@ class Homes extends Controller
 
     public function recoverAccount(): Response
     {
-        Redirect::post('');
         CSRF::check($this->request->post['csrf_token']);
         $data = [
             'email' => $this->request->post['email'],
@@ -181,7 +177,6 @@ class Homes extends Controller
 
     public function passwordReset($email, $hash): Response
     {
-        Redirect::post('');
         CSRF::check($this->request->post['csrf_token']);
         $user = $this->usersModel->findByField('email', $email);
         $hash_row = $this->usersModel->getPasswordResetRow($user->id);
@@ -254,7 +249,6 @@ class Homes extends Controller
 
     public function contactUs(): Response
     {
-        Redirect::post('');
         CSRF::check($this->request->post['csrf_token']);
         $data = [
             'email' => $this->request->post['email'],
