@@ -135,10 +135,10 @@ abstract class Model
         }
         $data = (array) $data;
         $conn = $this->database->getConnection();
-        $fields = implode(",", array_keys($data));
-        $placeholders = implode(",", array_fill(0, count($data), "?"));
+        $fields = implode(", ", array_keys($data));
+        $placeholders = implode(", ", array_fill(0, count($data), "?"));
         $table ??= $this->getTable();
-        $sql = "INSERT INTO {$table} ($fields) VALUES ($placeholders)";
+        $sql = "INSERT INTO `{$table}` ($fields) VALUES ($placeholders)";
         $stmt = $conn->prepare($sql);
         $i = 1;
         foreach($data as $value){
@@ -150,7 +150,7 @@ abstract class Model
             };
             $stmt->bindValue($i++, $value, $type);
         }
-
+       
         return $stmt->execute();
     }
     public function updateRow(int $id, array|object $data, string $table = null): bool
@@ -233,7 +233,7 @@ abstract class Model
         return $stmt->execute();
     }
 
-    public function killRow(int $id, string $table = null): bool
+    public function destroyRow(int $id, string $table = null): bool
     {
         $table ??= $this->getTable();
         $sql = "DELETE FROM  {$table} WHERE id = :id";
@@ -243,7 +243,7 @@ abstract class Model
         return $stmt->execute();
     }
 
-    public function killByfield(string $field, mixed $value, string $table = null): bool
+    public function destroyByfield(string $field, mixed $value, string $table = null): bool
     {
         $table ??= $this->getTable();
         $sql = "DELETE FROM  {$table} WHERE {$field} = :field_value";

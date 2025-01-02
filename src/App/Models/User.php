@@ -6,11 +6,12 @@ use Framework\Model;
 use Framework\Helpers\Session;
 use Framework\Helpers\Token;
 use Framework\Helpers\Mail;
-use PDO;
+use Framework\Helpers\Cookie;
+use Framework\Helpers\Auth;
 
 class User extends Model
 {
-    protected $table = "user";
+    // protected $table = "user";
 
     
     public function getUser(string $email=''): object|bool
@@ -124,6 +125,28 @@ class User extends Model
         }
     }
 
+    
+    public function validateContactUs(array|object $data): void
+    {
+        $data = (object)$data;
+        if(empty($data->name)){
+            $this->addError('name', "Full Name field is required");
+        }
+
+        if(filter_var($data->email, FILTER_VALIDATE_EMAIL) === false){
+            $this->addError("email", "Enter a valid email address");
+        }
+
+        if(empty($data->message)){
+            $this->addError('message', "Kindly enter a message");
+        }
+
+        if(empty($data->subject)){
+            $this->addError('subject', "Subjectc field is required");
+        }
+        
+    }
+
     public function resetAccount($email): bool
     {
         $user = $this->findByField("email", $email);
@@ -150,17 +173,6 @@ class User extends Model
         return false;
     }
 
-    public function getPasswordResetRow($id): object|bool
-    {
-        $id = (int)$id;
-        $sql = "SELECT * FROM password_reset WHERE user_id = :user_id";
-        $conn = $this->database->getConnection();
-        $stmt = $conn->prepare($sql);
-        $stmt->bindValue(":user_id", $id, PDO::PARAM_INT);
-        $stmt ->execute();
-        return $stmt->fetch(PDO::FETCH_OBJ);
-    }
-
     public function sendActivation($user): bool
     {
         $sign = $user->updated_on ?? $user->created_on; 
@@ -173,5 +185,43 @@ class User extends Model
         $mail->message("Click the link to activate your account: <a href=\"{$_ENV['URL_ROOT']}/activate/account/{$user->email}/{$token}\">Activate Account.</a>\n kindly ignore if you did not request this");
         return $mail->send();
     }
-   
+
+    public function rememberLogin(object|array $user): bool
+    {
+        if(empty($user->remember_me)){
+            return false;
+        }
+        $user = (object) $user;
+        $token = new Token();
+        $hashed_token = $token->getHash();
+        $expiry_timestamp = time() + 60*60*24*30;
+
+        $data = [
+            'token_hash' => $hashed_token,
+            'user_id' => $user->id,
+            'expires_at' => date('Y-m-d H:i:s', $expiry_timestamp)
+        ];
+        $this->destroyByfield('user_id', $user->id, 'remembered_logins'); 
+        if($this->insert($data, 'remembered_logins')){
+            return Cookie::set('remember_me', $hashed_token, $expiry_timestamp);
+        }
+        return false;
+    }
+
+    public function loginFromRemeberCookie(): bool
+    {
+        $cookie = Cookie::get(name: 'remember_me');
+        if(!empty($cookie)){
+            $token = $this->findByField('token_hash', $cookie, 'remembered_logins');
+            if(!empty($token)){
+                if(strtotime($token->expires_at) < time()){
+                    $this->destroyByfield('user_id', $token->user_id, 'remembered_logins');
+                }else{
+                    $user = $this->findById($token->user_id);
+                    return Auth::login($user);
+                }
+            }
+        }
+        return false;
+    }
 }

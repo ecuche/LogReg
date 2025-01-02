@@ -36,7 +36,7 @@ class Auth
         if(self::isLoggedIn()){
             self::intendedPage();
             Session::set('warn', $args['message']);
-            Redirect::to($args['url']);
+            Redirect::to("/{$args['url']}");
         }
         return false;
     }
@@ -53,7 +53,7 @@ class Auth
         if(!self::isLoggedIn()){
             self::intendedPage();
             Session::set('warn', $args['message']);
-            Redirect::to($args['url']);
+            Redirect::to("/{$args['url']}");
         }
         return false;
     }

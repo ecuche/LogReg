@@ -2,13 +2,11 @@
 declare(strict_types=1);
 namespace App\Controllers;
 use Framework\Controller;
+use Framework\Helpers\Redirect;
 use Framework\Response;
 use App\Models\User;
-use App\Models\Home;
-use App\Models\RememberedLogins;
 use Framework\Helpers\Session;
 use Framework\Exceptions\PageNotFoundException;
-use Framework\Helpers\Redirect;
 use Framework\Helpers\Auth;
 use Framework\Helpers\CSRF;
 use Framework\Helpers\Mail;
@@ -18,12 +16,12 @@ use Framework\Helpers\Token;
 
 class Homes extends Controller
 {
-    public function __construct(private User $usersModel, private Home $homeModel, private RememberedLogins $rememberedLogins)
+    public function __construct(private User $usersModel)
     {
         if(!Auth::isLoggedIn()){
-            if($rememberedLogins->loginFromRemeberCookie()){
+            if($usersModel->loginFromRemeberCookie()){
                 Session::set("success", 'Welcome back');
-                Redirect::to("dashboard");
+                Redirect::to("/dashboard");
             }
         }
     }
@@ -96,10 +94,9 @@ class Homes extends Controller
                 }else{
                     Auth::login($user);
                     $user->remember_me = $data->remember_me;
-                    $this->rememberedLogins->rememberLogin($user);
+                    $this->usersModel->rememberLogin($user);
                     $page = Auth::returnPage();
                     if(!empty($page)){
-                        
                         return $this->redirect($page);
                     }else{
                         Session::set('success','Login successful');
@@ -122,7 +119,7 @@ class Homes extends Controller
 
     public function logOutUser(): Response
     {
-        $this->rememberedLogins->deleteRememberMe(Session::get('id'));
+        $this->usersModel->destroyByfield('user_id', Session::get('id'), 'remembered_logins');
         Auth::logout('You have logged out Successfully');
         Session::set('success','You have logged out Successfully');
         return $this->redirect("");
@@ -159,7 +156,7 @@ class Homes extends Controller
     public function resetPassword($email, $hash): Response
     {
         $user = $this->usersModel->findByField('email', $email);
-        $hash_row = $this->usersModel->getPasswordResetRow($user->id);
+        $hash_row = $this->usersModel->findByField('user_id', $user->id, 'password_reset');
         if(!empty($hash_row) && ($hash_row->hash === $hash)){
             if (strtotime($hash_row->expiry) > time()) {
                 return $this->view('homes/reset-password.mvc', [
@@ -179,7 +176,7 @@ class Homes extends Controller
     {
         CSRF::check($this->request->post['csrf_token']);
         $user = $this->usersModel->findByField('email', $email);
-        $hash_row = $this->usersModel->getPasswordResetRow($user->id);
+        $hash_row = $this->usersModel->findByField('user_id', $user->id,  'password_reset');
         $data = [
             'password' => $this->request->post['password'],
             'password_again' => $this->request->post['password_again'],
@@ -190,7 +187,7 @@ class Homes extends Controller
             if(!empty($user)){
                 $new_password = password_hash($data->password, PASSWORD_DEFAULT); 
                 $this->usersModel->updateRow($user->id, ['password' => $new_password]);
-                $this->usersModel->killRow($hash_row->id, 'password_reset');
+                $this->usersModel->destroyRow($hash_row->id, 'password_reset');
                 $mail = new Mail;
                 $mail->to($user->email, $user->name);
                 $mail->subject('Password Reset Successful');
@@ -258,8 +255,8 @@ class Homes extends Controller
         ];
         $data = (object)$data;
         
-        $this->homeModel->validateContactUs($data);
-        if(empty($this->homeModel->getErrors())){
+        $this->usersModel->validateContactUs($data);
+        if(empty($this->usersModel->getErrors())){
             $mail = new Mail;
             $mail->to('contact@LogReg.com');
             $mail->from($data->email, $data->name);
@@ -274,7 +271,7 @@ class Homes extends Controller
             }
         }else{
             return $this->view('homes/contact-us.mvc', [
-                'errors'=> (object) $this->homeModel->getErrors(),
+                'errors'=> (object) $this->usersModel->getErrors(),
                 'contact' => $data,
                 'CSRF'=> CSRF::generate()
             ]);

@@ -56,7 +56,7 @@ class Users extends Controller
                 $this->usersModel->updateRow($user->id, ['name' => $data->name]);
                 if($user->email !== $data->email){
                     $this->usersModel->updateRow($user->id, ['email' => $data->email, 'active'=>0]);
-                    $this->usersModel->killByfield('user_id', $user->id, 'remembered_logins');
+                    $this->usersModel->destroyByfield('user_id', $user->id, 'remembered_logins');
                     $user = $this->usersModel->findById($user->id);
                     $this->usersModel->sendActivation($user);
                     Auth::logout('Email reset successful. Kindly check your email to activate your account');
