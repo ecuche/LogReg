@@ -18,43 +18,31 @@ class Auth
         return false;
     }
 
-    public static function passRedirect(array|object $args = []): null|bool
+    public static function passRedirect(string $url = '/dashboard', string $message = ''): null|bool
     {
-        $args = (array) $args;
-        $default = ['url'=>'', 'message'=> 'Kindly Logout to View this page'];
-        foreach ($default as $key => $value){
-            if(empty($args[$key])){
-                $args[$key] = $value;
-            }
-        }
+        $message ??= $message;
         if(self::isLoggedIn()){
             self::intendedPage();
-            Session::set('warn', $args['message']);
-            Redirect::to($args['url']);
+            !empty($message) ? Session::set('warn', $message): false;
+            Redirect::to($url);
         }
         return false;
     }
 
-    public static function failRedirect(array|object $args = []): null|bool
+    public static function failRedirect($url = '', $message = ''): null|bool
     {
-        $args = (array) $args;
-        $default = ['url'=>'', 'message'=> 'Kindly Login to View this page'];
-        foreach ($default as $key => $value){
-            if(empty($args[$key])){
-                $args[$key] = $value;
-            }
-        }
+        $message ??= $message;
         if(!self::isLoggedIn()){
             self::intendedPage();
-            Session::set('warn', $args['message']);
-            Redirect::to($args['url']);
+            !empty($message) ? Session::set('warn', $message): false;
+            Redirect::to($url);
         }
         return false;
     }
 
     public static function login(object $user): bool
     {
-        // Session::regenerate();
+        Session::regenerate();
         $id = Session::set('id', $user->id);
         $email = Session::set('email', $user->email);
         $name = Session::set('name', $user->name);
@@ -64,10 +52,10 @@ class Auth
     public static function logout(string $message = ''): bool
     {   
         Cookie::delete('remember_me');
-        // $result = Session::destroy();
-        $result = Session::delete('id');
-        Session::delete('email');
-        Session::delete('username');
+        $result = Session::destroy();
+        // $result = Session::delete('id');
+        // Session::delete('email');
+        // Session::delete('username');
         Session::set('success', $message); 
         return $result;  
     }

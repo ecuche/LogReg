@@ -123,6 +123,10 @@ class User extends Model
         if(filter_var($data->email, FILTER_VALIDATE_EMAIL) === false){
             $this->addError("email", "Enter a valid email address");
         }
+
+        if(empty($this->errors) && $this->fieldValueExists("email",$data->email)){
+            $this->addError("email", "email is already taken");
+        }
     }
 
     

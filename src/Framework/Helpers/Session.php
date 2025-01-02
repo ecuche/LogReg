@@ -67,16 +67,17 @@ class Session{
 	public static function destroy(): bool
 	{
 		$_SESSION = [];
-		if (ini_get("session.use_cookies")) {
-			$params = session_get_cookie_params();
-			setcookie(session_name(), '', time() - 42000,
-				$params["path"], $params["domain"],
-				$params["secure"], $params["httponly"]
-			);
-		}
-		$result = session_destroy();
-		session_start();
-		return $result;
+		// if (ini_get("session.use_cookies")) {
+		// 	$params = session_get_cookie_params();
+		// 	setcookie(session_name(), '', time() - 42000,
+		// 		$params["path"], $params["domain"],
+		// 		$params["secure"], $params["httponly"]
+		// 	);
+		// }
+		// $result = session_destroy();
+		// session_start();
+		// return $result;
+		return true;
 	}
 
 	public static function regenerate(): bool

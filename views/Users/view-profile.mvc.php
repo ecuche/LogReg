@@ -3,17 +3,17 @@
 {% block title %} View Profile {% endblock %}
 {% block body %}
 <section class="py-5">
-        <div class="container py-5">
-            <div class="row d-flex justify-content-center">
-                <div class="col-md-6 col-xl-4">
-                    <div class="card">
-                        <div class="card-body text-center d-flex flex-column align-items-center">
-                        {% if(!empty($success)): %}
-                            <div class="alert alert-success" role="alert">
-                                {{$success}}
-                            </div>
-                        {% endif; %}
-                        <div class="mb-3 row content-center">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <!-- <div class="col-lg-8 mx-auto"> -->
+                <div class="card">
+                    <div class="card-body text-center d-flex flex-column align-items-center">
+                    {% if(!empty($success)): %}
+                        <div class="alert alert-success" role="alert">
+                            {{$success}}
+                        </div>
+                    {% endif; %}
+                        <!-- <div class="mb-3 row content-center"> -->
                             <div class="card text-center row">
                                 <div class="card-header">
                                     {{$user->name}}
@@ -27,12 +27,13 @@
                                     Joined: {{$time_ago}}
                                 </div>
                             </div>
-                        </div>
+                        <!-- </div> -->
                     </div>
                 </div>
-            </div>
+            <!-- </div> -->
         </div>
-    </section>
+    </div>
+</section>
    
 {% endblock %}
 

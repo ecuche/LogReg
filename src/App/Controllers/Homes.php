@@ -28,6 +28,7 @@ class Homes extends Controller
 
     public function index(): Response
     {
+        Auth::passRedirect();
         return $this->view('homes/index.mvc', [
             'success' => Session::flash('success'),
             'warn' => Session::flash('warn'),
@@ -93,9 +94,7 @@ class Homes extends Controller
                     Auth::login($user);
                     $user->remember_me = $data->remember_me;
                     $this->usersModel->rememberLogin($user);
-                   
                     $page = Auth::returnPage();
-                   
                     if(!empty($page)){
                         return $this->redirect($page);
                     }else{
@@ -112,7 +111,6 @@ class Homes extends Controller
                 'errors'=> (object) $this->usersModel->getErrors(),
                 'user' => $data,
                 'CSRF'=> CSRF::generate()
-
             ]);
         }
     }
@@ -166,9 +164,9 @@ class Homes extends Controller
             }
             Session::set('warn','password reset has expired');
             return $this->redirect("");
-        }
-        return $this->redirect("500");
-
+        }else{
+            return $this->redirect("500");
+        }   
     }
 
     public function passwordReset($email, $hash): Response
