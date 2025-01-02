@@ -1,7 +1,10 @@
 <nav class="navbar navbar-dark bg-dark fixed-top">
   <div class="container-fluid">
-    
-  <a class="navbar-brand d-flex align-items-center" href="{{ URL_ROOT }}">
+  {% if(isset($_SESSION['id'])): %}
+  <a class="navbar-brand d-flex align-items-center" href="{{ URL_ROOT.'/dashboard' }}">
+    {% else :%}
+    <a class="navbar-brand d-flex align-items-center" href="{{ URL_ROOT }}">
+    {% endif; %}
     <span class="bs-icon-sm bs-icon-circle bs-icon-primary shadow d-flex justify-content-center align-items-center me-2 bs-icon">
         <i class="bi bi-grid-fill"></i>
     </span>
@@ -21,17 +24,17 @@
       </div>
       <div class="offcanvas-body">
         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-        {% if(isset($_SESSION['id'])): %}
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/Logout'}}">Logout</a>
-          </li>
-        {% endif; %}  
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/contact'}}">Contact Us</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/about-us'}}">About</a>
           </li>
+          {% if(isset($_SESSION['id'])): %}
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="{{URL_ROOT.'/Logout'}}">Logout</a>
+          </li>
+        {% endif; %}  
         </ul>
       </div>
     </div>

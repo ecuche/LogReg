@@ -2,7 +2,7 @@
 $router = new Framework\Router;
 
 // Homes Routes
-$router->add('/', ["controller" => "homes", "method" => "index"]);
+$router->add('/', ["controller" => "homes", "method" => "index", "auth"=>false]);
 $router->add('/register', ["controller" => "homes", "method" => "register", "auth"=>false]);
 $router->add('/forgot-password', ["controller" => "homes", "method" => "forgot-password", "auth"=>false]);
 $router->add('/register-new-user', ["controller" => "homes", "method" => "register-new-user", "form"=> "post"]);

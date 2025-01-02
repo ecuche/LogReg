@@ -7,17 +7,12 @@ use Framework\Helpers\Cookie;
 
 class Auth
 {
-    public function __construct()
-    {
-
-    }
-
     public static function isLoggedIn(): bool
     {
         $id = Session::get('id') ?? false;
         $email = Session::get('email') ?? false;
         $username = Session::get('username') ?? false;
-        if($id && ($email || $username)){
+        if(!empty($id) && (!empty($email) || !empty($username))){
             return true;
         }
         return false;
@@ -32,11 +27,10 @@ class Auth
                 $args[$key] = $value;
             }
         }
-
         if(self::isLoggedIn()){
             self::intendedPage();
             Session::set('warn', $args['message']);
-            Redirect::to("/{$args['url']}");
+            Redirect::to($args['url']);
         }
         return false;
     }
@@ -53,7 +47,7 @@ class Auth
         if(!self::isLoggedIn()){
             self::intendedPage();
             Session::set('warn', $args['message']);
-            Redirect::to("/{$args['url']}");
+            Redirect::to($args['url']);
         }
         return false;
     }

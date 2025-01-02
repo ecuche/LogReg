@@ -28,8 +28,6 @@ class Homes extends Controller
 
     public function index(): Response
     {
-        Auth::passRedirect(['url'=>'dashboard']);
-        
         return $this->view('homes/index.mvc', [
             'success' => Session::flash('success'),
             'warn' => Session::flash('warn'),
@@ -95,7 +93,9 @@ class Homes extends Controller
                     Auth::login($user);
                     $user->remember_me = $data->remember_me;
                     $this->usersModel->rememberLogin($user);
+                   
                     $page = Auth::returnPage();
+                   
                     if(!empty($page)){
                         return $this->redirect($page);
                     }else{
@@ -121,7 +121,6 @@ class Homes extends Controller
     {
         $this->usersModel->destroyByfield('user_id', Session::get('id'), 'remembered_logins');
         Auth::logout('You have logged out Successfully');
-        Session::set('success','You have logged out Successfully');
         return $this->redirect("");
     }
 
@@ -290,7 +289,6 @@ class Homes extends Controller
 
     public function test()  
     {
-        
         $mail = new Mail;
         $mail->to('ecuche@gmail.com');
         $mail->subject('try html');
