@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace Framework\Helpers;
-
 use Framework\Helpers\Data;
-
 class Mail
 {
     protected array $errors = [];
@@ -22,11 +20,11 @@ class Mail
     protected string $body = "";
 
     public function __construct(){
-        $this->boundary = md5(date('r', time()));
+        $date = date('r', time());
+        $this->boundary = md5($date);
         $this->headers['From'] = $this->from = $_ENV["EMAIL_FROM"];
         $this->headers['Reply-To'] =$this->replyto =  $_ENV["EMAIL_REPLYTO"];
-        $this->headers["MIME-Version"] = "1.0";
-        $this->headers['Date'] = date('D, d M Y H:i:s O');
+        $this->headers['Date'] = $date;
         $this->headers['Content-Type'] = "multipart/mixed; boundary={$this->boundary}";
     }
 

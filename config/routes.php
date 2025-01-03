@@ -23,7 +23,7 @@ $router->add('/test', ["controller" => "homes", "method" => "test"]);
 $router->add('/admin/{controller}/{method}', ["namespace" => "Admin"]);
 
 // Users Routes
-$router->add("/dashboard", ["controller" => "users", "method" => "dashboard", "auth"=>true]);
+$router->add("/dashboard", ["controller" => "users", "method" => "dashboard"]);
 $router->add("/profile/update", ["controller" => "users", "method" => "update-profile", "auth"=>true]);
 $router->add("/update/profile", ["controller" => "users", "method" => "profile-update", "form" => "post"]);
 $router->add("/profile/view", ["controller" => "users", "method" => "view-profile", "auth"=>true]);

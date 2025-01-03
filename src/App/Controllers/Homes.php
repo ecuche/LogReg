@@ -260,9 +260,10 @@ class Homes extends Controller
             $mail->replyto($data->email, $data->name);
             $mail->subject($data->subject);
             $mail->message($data->message);
+            $mail->is_html();
             if($mail->send()){
                 Session::set('success','Message sent. Thanks for contacting us');
-                return $this->redirect("dashboard");
+                return $this->redirect("");
             }else{
                 return $this->redirect("505");
             }
@@ -287,16 +288,18 @@ class Homes extends Controller
 
     public function test()  
     {
-        $mail = new Mail;
-        $mail->to('ecuche@gmail.com');
-        $mail->subject('try html');
-        $html = $this->raw('500.mvc', []);
-        $mail->message($html);
-        $mail->is_html();
-        $mail->attachment('C:\Users\cousin\Desktop\attachment.zip');
-        $mail->send();
+        // $mail = new Mail;
+        // $mail->to('ecuche@gmail.com');
+        // $mail->subject('try html');
+        // $html = $this->raw('500.mvc', []);
+        // $mail->message($html);
+        // $mail->is_html();
+        // $mail->attachment('C:\Users\cousin\Desktop\attachment.zip');
+        // $mail->send();
 
-
+        echo date('r', time());
+        echo "<br>";
+        echo  date('D, d M Y H:i:s O');
 
 
         //always leave this exit line if you will not use template

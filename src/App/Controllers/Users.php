@@ -22,6 +22,7 @@ class Users extends Controller
 
     public function dashboard(): Response         
     { 
+        Auth::failRedirect("", "Kindly login to access your dashboard");
         return $this->view('users/dashboard.mvc', [
             'user' => $this->user,
             'success' => Session::flash('success')
@@ -42,14 +43,13 @@ class Users extends Controller
         CSRF::check($this->request->post['csrf_token']);
         $user = $this->user;
         $data = [
+            'id' => $user->id,
             'name' => $this->request->post['name'],
-            'email' => $this->request->post['email'],
+            'email' => $this->request->post['email']
         ];
 
-        
         $data = (object)$data;
         $this->usersModel->validateProfileUpdate($data);
-        
         if(empty($this->usersModel->getErrors())){
             if(!empty($user)){
 
